@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def plot_discrete_OT(X, Y, T, dimension=2):
+def plot_discrete_OT(X, Y, T):
     """
     Plot the optimal transport between two sets of points in 2D or 3D.
     
@@ -10,8 +10,9 @@ def plot_discrete_OT(X, Y, T, dimension=2):
     X (numpy.ndarray): Source points (N x dimension).
     Y (numpy.ndarray): Target points (N x dimension).
     T (numpy.ndarray): Transport matrix (N x N).
-    dimension (int): Dimension of the data (2 or 3).
+  
     """
+    dimension = X.shape[1]
     if dimension not in [2, 3]:
         raise ValueError("Dimension must be 2 or 3")
     
@@ -40,13 +41,5 @@ def plot_discrete_OT(X, Y, T, dimension=2):
     plt.title('Optimal Transport Plan Visualization')
     plt.show()
 
-# Example usage
-N = 5
-dimension = 3  # Change to 3 for 3D visualization
-X = np.random.rand(N, dimension) * 10  # Source points
-Y = np.random.rand(N, dimension) * 10  # Target points
+    return
 
-# Example transport plan (e.g., identity for simplicity)
-T = np.eye(N)
-
-plot_optimal_transport(X, Y, T, dimension=dimension)

@@ -12,4 +12,4 @@ def discrete_OT(X, Y):
     problem = cp.Problem(objective, [constraint_rows, constraint_cols])
     problem.solve()
 
-    return T.value
+    return T.value, cost_matrix

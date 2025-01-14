@@ -54,19 +54,5 @@ def plot_geodesic(m1, Sigma1, m2, Sigma2, steps):
 
     plt.show()
 
-# Example usage
-m1 = np.array([0, 0 ])
-Sigma1 = np.array([[2, 0.5], [0.5, 1]])
-m2 = np.array([5, 5])
-Sigma2 = np.array([[1, 0], [0, 3]])
-
-plot_geodesic(m1, Sigma1, m2, Sigma2, [0, 0.25, 0.5, 0.75, 1.0])
-# Example usage
-m1 = np.array([0, 0, 0])
-Sigma1 = np.array([[2, 0.5, 0.1], [0.5, 1, 0.1], [0.1, 0.1, 1]])
-m2 = np.array([5, 5, 5])
-Sigma2 = np.array([[1, 0, 0], [0, 3, 0], [0, 0, 2]])
-
-plot_geodesic(m1, Sigma1, m2, Sigma2, [0, 0.25, 0.5, 0.75, 1.0])
 
 

@@ -23,17 +23,18 @@ def generate_covariance_matrix(d, lambda_, decay_rate, diagonal=True, decay_type
         Lambda = np.diag(eigenvalues)
         covariance_matrix = Q @ Lambda @ Q.T
 
-    return covariance_matrix
+    return covariance_matrix , eigenvalues
 
 
-def generate_gaussian_samples(n, covariance_matrix):
+def generate_gaussian_samples(n, covariance_matrix,mean= None):
     d = covariance_matrix.shape[0]
-    mean = np.zeros(d)
+    if mean is None:
+        mean = np.zeros(d)
     return np.random.multivariate_normal(mean, covariance_matrix, n)
 
-def generate_samples(d,lambda1,lambda2,decay1,decay2,decay_type1,decay_type2,n):
-    S = generate_covariance_matrix(d,lambda1,decay1,decay_type=decay_type1)
-    Sbis = generate_covariance_matrix(d,lambda2,decay2,diagonal=False,decay_type=decay_type2)
+def generate_samples(d,lambda1,lambda2,decay1,decay2,decay_type1,decay_type2,n,mean2):
+    S ,eigenS= generate_covariance_matrix(d,lambda1,decay1,decay_type=decay_type1)
+    Sbis ,eigenSbis= generate_covariance_matrix(d,lambda2,decay2,diagonal=False,decay_type=decay_type2)
     X = generate_gaussian_samples(n,S)
-    Y = generate_gaussian_samples(n,Sbis)
-    return X, Y, S , Sbis
+    Y = generate_gaussian_samples(n,Sbis,mean=mean2)
+    return X, Y, S , Sbis,eigenS,eigenSbis
