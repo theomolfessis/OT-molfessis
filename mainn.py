@@ -5,6 +5,7 @@ from discrete_OT import discrete_OT
 from discrete_cost import discrete_cost
 from gaussian_OT import gaussian_OT
 from comparing_plot import comparing_plot
+from algo_one import subspace_gd
 
 
 
@@ -16,9 +17,10 @@ from discrete_cost import discrete_cost
 from gaussian_OT import gaussian_OT
 from comparing_plot import comparing_plot
 
-def plot_cost_and_eigenvalues_evolution(n, d, lambda1, lambda2, decay1, decay2, decay_type1, decay_type2, mean2,plot_transfer_idx = -1 ):
+def plot_cost_and_eigenvalues_evolution(n, d, lambda1, lambda2, decay1, decay2, decay_type1, decay_type2, mean2, plot_transfer_idx=-1):
     costs_proj = []
-    
+    optimal_subspace_costs = []  # List to store the costs from the optimal subspace
+
     # Generate data and eigenvalues
     X, Y, S, Sbis, eigenvalues_S, eigenvalues_Sbis = generate_samples(d, lambda1, lambda2, decay1, decay2, decay_type1, decay_type2, n, mean2)
 
@@ -28,6 +30,20 @@ def plot_cost_and_eigenvalues_evolution(n, d, lambda1, lambda2, decay1, decay2, 
 
     # Gaussian OT cost
     A_real, cost_real = gaussian_OT(S, Sbis, np.zeros(d), mean2)
+
+    # Compute the optimal subspace and associated cost using algorithm_1
+    # Set parameters for algorithm_1
+    num_iterations = 100  # Number of iterations
+    k = 2  # Dimension of the optimal subspace to compute
+    V_optimal, MK_cost = subspace_gd(S, Sbis,k, niter=num_iterations, )
+    optimal_projection = V_optimal @ V_optimal.T  # Project onto the optimal subspace
+
+    # Compute transports and costs in the optimal subspace
+    X_optimal = X @ optimal_projection
+    Y_optimal = Y @ optimal_projection
+    T_optimal, _ = discrete_OT(X_optimal, Y_optimal)
+    optimal_subspace_cost = discrete_cost(T_optimal, X, Y)
+    optimal_subspace_costs.append(optimal_subspace_cost)
 
     for k in range(1, d + 1):
         X_proj = X[:, :k]
@@ -46,6 +62,7 @@ def plot_cost_and_eigenvalues_evolution(n, d, lambda1, lambda2, decay1, decay2, 
     # Plotting costs
     ks = np.arange(1, d + 1)
     ax1.plot(ks, costs_proj, 'r-', label='Projected Cost', linewidth=2)
+    ax1.plot(ks, [optimal_subspace_cost] * len(ks), 'm--', label='Optimal Subspace Cost', linewidth=2)  # Modified: plot optimal subspace cost
     ax1.axhline(y=cost_real, color='b', linestyle='--', linewidth=2, label='Gaussian OT Cost')
     ax1.axhline(y=cost_high, color='k', linestyle='--', linewidth=2, label='High-Dimensional Discrete OT Cost')
     ax1.set_xlabel('Dimension of the Projection Subspace and descending rank of eigenvalue')
@@ -66,14 +83,8 @@ def plot_cost_and_eigenvalues_evolution(n, d, lambda1, lambda2, decay1, decay2, 
     ax2.set_ylabel('Eigenvalues')
     ax2.tick_params(axis='y', labelcolor='tab:blue')
 
-    # Legend
-    #lines, labels = ax1.get_legend_handles_labels()
-    #lines2, labels2 = ax2.get_legend_handles_labels()
-    #ax2.legend(lines + lines2, labels + labels2, loc='upper right')
-
     plt.title('Evolution of OT Costs and Eigenvalues as k Varies, dim ' +str(d) + ' , with ' +str(n) + ' points' )
     plt.show()
-
 
 
 
