@@ -16,54 +16,8 @@ def polar_decomposition(A):
     Returns:
     the unitary matrix U
     """
-    U, S, V = svd(A)
-    return U @ V.T
-
-
-
-
-def algorithm_one(A, B, eta, num_iterations, k):
-    """
-    Perform gradient descent on the Grassmann manifold to find the optimal transport matrix using PyTorch.
-
-    Args:
-    A, B (torch.Tensor): Covariance matrices of the source and target Gaussian distributions.
-    eta (float): Learning rate.
-    num_iterations (int): Number of iterations.
-    k (int): Chosen dimension for the subspace.
-
-    Returns:
-    torch.Tensor: Optimized subspace matrix V.
-    """
-    # Initialization
-    V = polar_decomposition(A @ B)
-    cost_hist = []
-
-    for i in range(num_iterations):
-        Vk = V[:, :k]
-
-        # Here you need to define MK_gaussian to compute T_MK and possibly compute its gradients
-        T_MK, _ = MK_gaussian_torch(A, B, Vk)  # Assuming MK_gaussian returns the transport matrix and cost
-
-        # Calculate the cost - adjust as needed if transport_cost_gaussians_torch needs different parameters
-        MK_cost = transport_cost_gaussians_torch(Vk.T @ A @ Vk, Vk.T @ B @ Vk, T_MK)
-        cost_hist.append(MK_cost.item())
-
-        # Computing the gradient of V manually in respect to the cost
-        V.requires_grad_(True)
-        MK_cost.backward()
-
-        # Gradient update on the Grassmann manifold (retracting to the manifold)
-        with torch.no_grad():
-            gradient = V.grad
-            V -= eta * gradient  # simple gradient descent update
-            V, _ = torch.linalg.qr(V)  # re-orthonormalize to stay on the Grassmann manifold
-
-        # Optionally print the cost to monitor convergence
-        if i % 10 == 0:
-            print(f"Iteration {i}, Cost: {MK_cost.item()}")
-
-    return V[:, :k], cost_hist
+    V, _, W = np.linalg.svd(A)
+    return V.dot(W.T)
 
 def MK_torch(A, B, k=2):
     d = A.shape[0]
@@ -80,8 +34,8 @@ def MK_torch(A, B, k=2):
   
     schurB = Bet - Beet.t().mm(torch.inverse(Be)).mm(Beet)
   
-    Tee = gaussian_OT_torch(Ae, Be)
-    Tschur = gaussian_OT_torch(schurA, schurB)
+    Tee , _ = gaussian_OT_torch(Ae, Be)
+    Tschur, _ = gaussian_OT_torch(schurA, schurB)
  
     return torch.cat((torch.cat((Tee, Beet.t().mm(torch.inverse(Be)).mm(Tee) - Tschur.mm(Aeet.t()).mm(torch.inverse(Ae))), 0), 
                       torch.cat((torch.zeros((k, d-k)), Tschur), 0)), 1)
